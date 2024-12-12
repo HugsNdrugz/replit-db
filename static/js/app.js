@@ -17,13 +17,27 @@ function initializeFeatherIcons() {
 
 function setupNavigation() {
     const navItems = document.querySelectorAll('.sidebar ul li');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const menuButton = document.querySelector('.messenger-logo')
+
+    // Mobile navigation toggle
+    menuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        mainContent.classList.toggle('shifted');
+    });
+
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const sectionId = item.getAttribute('data-section');
-            if (sectionId) {
+             if (sectionId) {
                 navItems.forEach(li => li.classList.remove('active'));
                 item.classList.add('active');
                 navigateToSection(sectionId);
+                 if (sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                    mainContent.classList.remove('shifted');
+                }
             }
         });
     });
@@ -50,13 +64,14 @@ function setupSearch() {
     searchInputs.forEach(inputId => {
         const searchInput = document.getElementById(inputId);
         if (searchInput) {
-            searchInput.addEventListener('input', debounce(() => {
+             searchInput.addEventListener('input', debounce(() => {
                 const sectionId = searchInput.closest('.section').id;
                 searchSection(sectionId);
             }, 300));
         }
     });
 }
+
 
 function loadInitialData() {
     loadSectionData('chats');
@@ -106,6 +121,7 @@ function setupSmsWindow() {
     }
 }
 
+
 async function openChat(contactName) {
     const chatWindow = document.querySelector('.chat-window');
     const chatWindowName = document.getElementById('chat-window-name');
@@ -122,19 +138,20 @@ async function openChat(contactName) {
         const messages = await response.json();
 
         messages.forEach(message => {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message-item');
-            messageElement.innerHTML = `
-                <p class="message-text">${message.text}</p>
-                <span class="message-time">${message.time}</span>
-            `;
-            if (message.sender === 'You') {
-                messageElement.classList.add('outgoing');
-            } else {
-                messageElement.classList.add('incoming');
-            }
-            chatMessagesContainer.appendChild(messageElement);
-        });
+             const messageElement = document.createElement('div');
+                messageElement.classList.add('message-item');
+                const formattedTime = formatTime(message.formatted_time);
+                messageElement.innerHTML = `
+                    <p class="message-text">${message.text}</p>
+                    <span class="message-time">${formattedTime}</span>
+                 `;
+                if (message.message_type === 'sent') {
+                  messageElement.classList.add('outgoing');
+                 } else {
+                   messageElement.classList.add('incoming');
+                   }
+                chatMessagesContainer.appendChild(messageElement);
+           });
 
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         chatWindow.classList.add('visible');
@@ -159,13 +176,14 @@ async function openSms(contactName) {
         }
         const messages = await response.json();
 
-        messages.forEach(message => {
+      messages.forEach(message => {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message-item');
-            messageElement.innerHTML = `
-                <p class="message-text">${message.text}</p>
-                <span class="message-time">${message.time}</span>
-            `;
+             const formattedTime = formatTime(message.formatted_time);
+             messageElement.innerHTML = `
+                    <p class="message-text">${message.text}</p>
+                    <span class="message-time">${formattedTime}</span>
+                `;
             if (message.sms_type === 'sent') {
                 messageElement.classList.add('outgoing');
             } else {
@@ -182,9 +200,24 @@ async function openSms(contactName) {
     }
 }
 
+function formatTime(timeString) {
+    try {
+        const date = new Date(timeString);
+         const formattedTime = date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+             minute: '2-digit',
+             hour12: true,
+           });
+            return formattedTime;
+    } catch (error) {
+        console.error('Error formatting time:', error);
+        return 'Invalid Date';
+    }
+}
+
 function loadSectionData(sectionId) {
     switch (sectionId) {
-        case 'chats':
+         case 'chats':
             loadChats();
             break;
         case 'calls':
@@ -206,6 +239,7 @@ function loadSectionData(sectionId) {
             console.warn(`No data loader for section: ${sectionId}`);
     }
 }
+
 
 async function searchSection(sectionId) {
     switch (sectionId) {
@@ -246,7 +280,7 @@ async function searchChats() {
 
         if (response.ok) {
             const results = await response.json();
-            if (results.length > 0) {
+             if (results.length > 0) {
                 results.forEach(result => {
                     const resultElement = document.createElement('div');
                     resultElement.classList.add('search-result-item');
@@ -350,7 +384,7 @@ async function searchSms() {
 }
 
 async function searchApps() {
-    const searchTerm = document.getElementById('search-apps').value;
+     const searchTerm = document.getElementById('search-apps').value;
     const resultsContainer = document.getElementById('search-results-apps');
     resultsContainer.innerHTML = '';
 
@@ -372,7 +406,7 @@ async function searchApps() {
 
 function displaySearchResults(results, container, type) {
     if (results.length > 0) {
-        results.forEach(result => {
+         results.forEach(result => {
             const resultElement = document.createElement('div');
             resultElement.classList.add('search-result-item');
             switch (type) {
@@ -380,20 +414,20 @@ function displaySearchResults(results, container, type) {
                     resultElement.textContent = `${result.from_to}: ${result.call_type} - ${result.time}`;
                     break;
                 case 'keylog':
-                    resultElement.textContent = `${result.application}: ${result.text} - ${result.time}`;
-                    break;
-                case 'contact':
+                     resultElement.textContent = `${result.application}: ${result.text} - ${result.time}`;
+                     break;
+                 case 'contact':
                     resultElement.textContent = `${result.name}: ${result.phone_number || result.email}`;
                     break;
                 case 'sms':
                     resultElement.textContent = `${result.from_to}: ${result.text} - ${result.time}`;
-                    resultElement.addEventListener('click', () => {
+                      resultElement.addEventListener('click', () => {
                         openSms(result.from_to);
                     });
                     break;
                 case 'app':
-                    resultElement.textContent = `${result.application_name}: ${result.package_name}`;
-                    break;
+                      resultElement.textContent = `${result.application_name}: ${result.package_name}`;
+                      break;
                 default:
                     resultElement.textContent = `${result.name}: ${result.text}`;
                     resultElement.addEventListener('click', () => {
@@ -407,6 +441,7 @@ function displaySearchResults(results, container, type) {
     }
 }
 
+
 async function loadChats() {
     const chatList = document.getElementById('chat-list');
     chatList.innerHTML = '';
@@ -417,8 +452,9 @@ async function loadChats() {
             const chatItem = document.createElement('div');
             chatItem.classList.add('chat-item', 'card');
             chatItem.setAttribute('data-contact-name', chat.name);
+              const initials = chat.name.split(' ').map(word => word[0]).join('').toUpperCase();
             chatItem.innerHTML = `
-                <div class="profile-pic-placeholder">${chat.name.substring(0, 1).toUpperCase()}</div>
+                 <div class="profile-pic-placeholder">${initials}</div>
                 <div class="chat-details">
                     <span class="name">${chat.name}</span>
                     <span class="preview">${chat.last_message ? chat.last_message.substring(0, 30) : ''}</span>
@@ -439,19 +475,20 @@ async function loadCalls() {
     const callsList = document.getElementById('calls-list');
     callsList.innerHTML = '';
     const response = await fetch('/get_calls');
-    if (response.ok) {
+     if (response.ok) {
         const calls = await response.json();
-        calls.forEach(call => {
+         calls.forEach(call => {
             const callItem = document.createElement('div');
             callItem.classList.add('call-item', 'card');
+            const initials = call.from_to.split(' ').map(word => word[0]).join('').toUpperCase();
             callItem.innerHTML = `
-                <div class="profile-pic-placeholder">${call.from_to.substring(0, 1).toUpperCase()}</div>
+                 <div class="profile-pic-placeholder">${initials}</div>
                 <div class="call-details">
                     <span class="name">${call.from_to}</span>
                     <span class="call-type">${call.call_type}</span>
                 </div>
                 <span class="time">${call.time}</span>
-                <span class="duration">${call.duration} seconds</span>
+                 <span class="duration">${call.duration} seconds</span>
             `;
             callsList.appendChild(callItem);
         });
@@ -464,7 +501,7 @@ async function loadKeylogs() {
     const keylogsTable = document.querySelector('#keylogs-table tbody');
     keylogsTable.innerHTML = '';
     const response = await fetch('/get_keylogs');
-    if (response.ok) {
+     if (response.ok) {
         const keylogs = await response.json();
         keylogs.forEach(keylog => {
             const row = keylogsTable.insertRow();
@@ -483,14 +520,15 @@ async function loadContacts() {
     const contactsList = document.getElementById('contacts-list');
     contactsList.innerHTML = '';
     const response = await fetch('/get_contacts');
-    if (response.ok) {
+     if (response.ok) {
         const contacts = await response.json();
-        contacts.forEach(contact => {
+         contacts.forEach(contact => {
             const contactItem = document.createElement('div');
             contactItem.classList.add('contact-item', 'card');
-            contactItem.innerHTML = `
-                <div class="profile-pic-placeholder">${contact.name.substring(0, 1).toUpperCase()}</div>
-                <div class="contact-details">
+             const initials = contact.name.split(' ').map(word => word[0]).join('').toUpperCase();
+             contactItem.innerHTML = `
+                  <div class="profile-pic-placeholder">${initials}</div>
+                 <div class="contact-details">
                     <span class="name">${contact.name}</span>
                     <span class="phone">${contact.phone_number || ''}</span>
                     <span class="email">${contact.email || ''}</span>
@@ -507,22 +545,23 @@ async function loadContacts() {
 async function loadSms() {
     const smsList = document.getElementById('sms-list');
     smsList.innerHTML = '';
-    const response = await fetch('/get_sms');
+     const response = await fetch('/get_sms');
     if (response.ok) {
         const smsMessages = await response.json();
         smsMessages.forEach(sms => {
-            const smsItem = document.createElement('div');
+             const smsItem = document.createElement('div');
             smsItem.classList.add('sms-item', 'card');
-            smsItem.setAttribute('data-contact-name', sms.from_to);
-            smsItem.innerHTML = `
-                <div class="profile-pic-placeholder">${sms.from_to.substring(0, 1).toUpperCase()}</div>
+             smsItem.setAttribute('data-contact-name', sms.from_to);
+             const initials = sms.from_to.split(' ').map(word => word[0]).join('').toUpperCase();
+             smsItem.innerHTML = `
+                  <div class="profile-pic-placeholder">${initials}</div>
                 <div class="sms-details">
                     <span class="name">${sms.from_to}</span>
                     <span class="preview">${sms.text.substring(0, 30)}</span>
                 </div>
                 <span class="time">${sms.time}</span>
             `;
-            smsItem.addEventListener('click', () => {
+             smsItem.addEventListener('click', () => {
                 openSms(sms.from_to);
             });
             smsList.appendChild(smsItem);
@@ -539,17 +578,18 @@ async function loadInstalledApps() {
     if (response.ok) {
         const apps = await response.json();
         apps.forEach(app => {
-            const appItem = document.createElement('div');
-            appItem.classList.add('app-item', 'card');
+             const appItem = document.createElement('div');
+             appItem.classList.add('app-item', 'card');
+             const initials = app.application_name.split(' ').map(word => word[0]).join('').toUpperCase();
             appItem.innerHTML = `
-                <div class="app-icon-placeholder">${app.application_name.substring(0, 1).toUpperCase()}</div>
+                 <div class="app-icon-placeholder">${initials}</div>
                 <div class="app-details">
-                    <span class="name">${app.application_name}</span>
-                    <span class="package-name">${app.package_name}</span>
+                     <span class="name">${app.application_name}</span>
+                   <span class="package-name">${app.package_name}</span>
                 </div>
                 <span class="install-date">${app.install_date}</span>
             `;
-            appsList.appendChild(appItem);
+             appsList.appendChild(appItem);
         });
     } else {
         console.error('Error loading installed apps:', response.status);

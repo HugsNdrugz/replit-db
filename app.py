@@ -17,29 +17,8 @@ def get_db_connection():
 # Routes for serving HTML pages:
 @app.route('/')
 def index():
-    # This route now only needs to render the base template.
-    # The chat list will be loaded dynamically by app.js.
-    return render_template('index.html')
+    return render_template('base.html')
 
-@app.route('/calls')
-def calls():
-    return render_template('calls.html')
-
-@app.route('/keylogs')
-def keylogs():
-    return render_template('keylogs.html')
-
-@app.route('/contacts')
-def contacts():
-    return render_template('contacts.html')
-
-@app.route('/sms')
-def sms():
-    return render_template('sms.html')
-
-@app.route('/installed_apps')
-def installed_apps():
-    return render_template('installed_apps.html')
 
 # Routes for fetching data (used by app.js):
 
