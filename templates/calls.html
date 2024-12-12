@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Calls{% endblock %}
+
+{% block content %}
+<div id="calls" class="section">
+    <div class="top-bar">
+        <h1>Calls</h1>
+        <div class="right-icons">
+            <i data-feather="refresh-cw" onclick="refreshData('calls')"></i>
+        </div>
+    </div>
+    <input type="text" id="search-calls" placeholder="Search calls" onkeyup="searchCalls()">
+    <div id="search-results-calls" class="search-results"></div>
+    <div class="calls-list" id="calls-list">
+        </div>
+</div>
+{% endblock %}

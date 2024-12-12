@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Chats{% endblock %}
+
+{% block content %}
+<div id="chats" class="section active">
+    <div class="top-bar">
+        <h1>Chats</h1>
+        <div class="right-icons">
+            <i data-feather="refresh-cw" onclick="refreshData('chats')"></i>
+        </div>
+    </div>
+    <input type="text" id="search-chats" placeholder="Search chats" onkeyup="searchChats()">
+    <div id="search-results-chats" class="search-results"></div>
+    <div class="chat-list" id="chat-list">
+        </div>
+</div>
+
+<div class="chat-window hidden">
+    <div class="chat-header">
+        <button class="close-chat">X</button>
+        <h2 id="chat-window-name"></h2>
+    </div>
+    <div class="messages-container" id="chat-messages">
+        </div>
+</div>
+{% endblock %}

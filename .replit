@@ -1,0 +1,9 @@
+run = "python3 app.py"
+modules = ["python-3.12", "python-3.10", "python-base-3.11", "nix"]
+
+[deployment]
+run = ["sh", "-c", "python3 app.py"]
+
+[[ports]]
+localPort = 5000
+externalPort = 5000

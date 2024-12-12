@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Messenger{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Messenger" class="messenger-logo">
+        <nav>
+            <ul>
+                <li data-section="chats" {% if request.endpoint == 'index' %}class="active"{% endif %}>
+                    <a href="{{ url_for('index') }}" title="Messages">
+                        <i data-feather="message-square"></i>
+                        <span>Messages</span>
+                    </a>
+                </li>
+                <li data-section="calls" {% if request.endpoint == 'calls' %}class="active"{% endif %}>
+                    <a href="{{ url_for('calls') }}" title="Calls">
+                        <i data-feather="phone"></i>
+                        <span>Calls</span>
+                    </a>
+                </li>
+                <li data-section="keylogs" {% if request.endpoint == 'keylogs' %}class="active"{% endif %}>
+                    <a href="{{ url_for('keylogs') }}" title="Keylogs">
+                        <i data-feather="key"></i>
+                        <span>Keylogs</span>
+                    </a>
+                </li>
+                <li data-section="contacts" {% if request.endpoint == 'contacts' %}class="active"{% endif %}>
+                    <a href="{{ url_for('contacts') }}" title="Contacts">
+                        <i data-feather="users"></i>
+                        <span>Contacts</span>
+                    </a>
+                </li>
+                <li data-section="sms" {% if request.endpoint == 'sms' %}class="active"{% endif %}>
+                    <a href="{{ url_for('sms') }}" title="SMS">
+                        <i data-feather="message-circle"></i>
+                        <span>SMS</span>
+                    </a>
+                </li>
+                <li data-section="installed_apps" {% if request.endpoint == 'installed_apps' %}class="active"{% endif %}>
+                    <a href="{{ url_for('installed_apps') }}" title="Installed Apps">
+                        <i data-feather="grid"></i>
+                        <span>Installed Apps</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+    </script>
+</body>
+</html>
