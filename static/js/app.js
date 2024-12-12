@@ -81,20 +81,24 @@ function setupChatWindow() {
     const chatList = document.getElementById('chat-list');
     const chatWindow = document.querySelector('.chat-window');
     const closeChatButton = document.querySelector('.close-chat');
+    const chatsSection = document.getElementById('chats');
 
     if (chatList) {
         chatList.addEventListener('click', (event) => {
             const chatItem = event.target.closest('.chat-item');
             if (chatItem) {
                 const contactName = chatItem.dataset.contactName;
+                chatsSection.style.display = 'none';
                 openChat(contactName);
+
             }
         });
     }
 
     if (closeChatButton) {
         closeChatButton.addEventListener('click', () => {
-            chatWindow.classList.remove('visible');
+          chatsSection.style.display = 'block';
+          chatWindow.classList.remove('visible');
         });
     }
 }
@@ -103,12 +107,15 @@ function setupSmsWindow() {
     const smsList = document.getElementById('sms-list');
     const smsWindow = document.querySelector('.sms-window');
     const closeSmsButton = document.querySelector('.close-sms');
+      const smsSection = document.getElementById('sms');
+
 
     if (smsList) {
         smsList.addEventListener('click', (event) => {
             const smsItem = event.target.closest('.sms-item');
             if (smsItem) {
                 const contactName = smsItem.dataset.contactName;
+                smsSection.style.display = 'none';
                 openSms(contactName);
             }
         });
@@ -116,7 +123,8 @@ function setupSmsWindow() {
 
     if (closeSmsButton) {
         closeSmsButton.addEventListener('click', () => {
-            smsWindow.classList.remove('visible');
+          smsSection.style.display = 'block';
+          smsWindow.classList.remove('visible');
         });
     }
 }
@@ -126,6 +134,7 @@ async function openChat(contactName) {
     const chatWindow = document.querySelector('.chat-window');
     const chatWindowName = document.getElementById('chat-window-name');
     const chatMessagesContainer = document.getElementById('chat-messages');
+
 
     chatWindowName.textContent = contactName;
     chatMessagesContainer.innerHTML = '';
