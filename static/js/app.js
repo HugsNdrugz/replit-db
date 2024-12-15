@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadInitialData();
     setupChatWindow();
     setupSmsWindow();
+    setupUpload();
 });
 
 function initializeFeatherIcons() {
@@ -17,15 +18,7 @@ function initializeFeatherIcons() {
 
 function setupNavigation() {
     const navItems = document.querySelectorAll('.sidebar ul li');
-    const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
-    const menuButton = document.querySelector('.messenger-logo')
-
-    // Mobile navigation toggle
-    menuButton.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-        mainContent.classList.toggle('shifted');
-    });
 
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -34,10 +27,6 @@ function setupNavigation() {
                 navItems.forEach(li => li.classList.remove('active'));
                 item.classList.add('active');
                 navigateToSection(sectionId);
-                 if (sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
-                    mainContent.classList.remove('shifted');
-                }
             }
         });
     });
@@ -72,7 +61,6 @@ function setupSearch() {
     });
 }
 
-
 function loadInitialData() {
     loadSectionData('chats');
 }
@@ -90,7 +78,6 @@ function setupChatWindow() {
                 const contactName = chatItem.dataset.contactName;
                 chatsSection.style.display = 'none';
                 openChat(contactName);
-
             }
         });
     }
@@ -108,7 +95,6 @@ function setupSmsWindow() {
     const smsWindow = document.querySelector('.sms-window');
     const closeSmsButton = document.querySelector('.close-sms');
       const smsSection = document.getElementById('sms');
-
 
     if (smsList) {
         smsList.addEventListener('click', (event) => {
@@ -129,12 +115,10 @@ function setupSmsWindow() {
     }
 }
 
-
 async function openChat(contactName) {
     const chatWindow = document.querySelector('.chat-window');
     const chatWindowName = document.getElementById('chat-window-name');
     const chatMessagesContainer = document.getElementById('chat-messages');
-
 
     chatWindowName.textContent = contactName;
     chatMessagesContainer.innerHTML = '';
@@ -154,7 +138,7 @@ async function openChat(contactName) {
                     <p class="message-text">${message.text}</p>
                     <span class="message-time">${formattedTime}</span>
                  `;
-                if (message.message_type === 'sent') {
+                if (message.sender === 'You') {
                   messageElement.classList.add('outgoing');
                  } else {
                    messageElement.classList.add('incoming');
@@ -188,10 +172,10 @@ async function openSms(contactName) {
       messages.forEach(message => {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message-item');
-             const formattedTime = formatTime(message.formatted_time);
+             const formattedTime = formatTime(message.time);
              messageElement.innerHTML = `
-                    <p class="message-text">${message.text}</p>
-                    <span class="message-time">${formattedTime}</span>
+                <p class="message-text">${message.text}</p>
+                <span class="message-time">${formattedTime}</span>
                 `;
             if (message.sms_type === 'sent') {
                 messageElement.classList.add('outgoing');
@@ -248,7 +232,6 @@ function loadSectionData(sectionId) {
             console.warn(`No data loader for section: ${sectionId}`);
     }
 }
-
 
 async function searchSection(sectionId) {
     switch (sectionId) {
@@ -420,16 +403,16 @@ function displaySearchResults(results, container, type) {
             resultElement.classList.add('search-result-item');
             switch (type) {
                 case 'call':
-                    resultElement.textContent = `${result.from_to}: ${result.call_type} - ${result.time}`;
+                    resultElement.textContent = `${result.from_to}: ${result.call_type} - ${formatTime(result.time)}`;
                     break;
                 case 'keylog':
-                     resultElement.textContent = `${result.application}: ${result.text} - ${result.time}`;
+                     resultElement.textContent = `${result.application}: ${result.text} - ${formatTime(result.time)}`;
                      break;
                  case 'contact':
-                    resultElement.textContent = `${result.name}: ${result.phone_number || result.email}`;
+                    resultElement.textContent = `${result.name}: ${result.phone_number || result.email_id}`;
                     break;
                 case 'sms':
-                    resultElement.textContent = `${result.from_to}: ${result.text} - ${result.time}`;
+                    resultElement.textContent = `${result.from_to}: ${result.text} - ${formatTime(result.time)}`;
                       resultElement.addEventListener('click', () => {
                         openSms(result.from_to);
                     });
@@ -437,7 +420,7 @@ function displaySearchResults(results, container, type) {
                 case 'app':
                       resultElement.textContent = `${result.application_name}: ${result.package_name}`;
                       break;
-                default:
+                  default:
                     resultElement.textContent = `${result.name}: ${result.text}`;
                     resultElement.addEventListener('click', () => {
                         openChat(result.name);
@@ -450,7 +433,6 @@ function displaySearchResults(results, container, type) {
     }
 }
 
-
 async function loadChats() {
     const chatList = document.getElementById('chat-list');
     chatList.innerHTML = '';
@@ -461,14 +443,14 @@ async function loadChats() {
             const chatItem = document.createElement('div');
             chatItem.classList.add('chat-item', 'card');
             chatItem.setAttribute('data-contact-name', chat.name);
-              const initials = chat.name.split(' ').map(word => word[0]).join('').toUpperCase();
+              const initials = chat.name.substring(0, 1).toUpperCase();
             chatItem.innerHTML = `
                  <div class="profile-pic-placeholder">${initials}</div>
                 <div class="chat-details">
                     <span class="name">${chat.name}</span>
                     <span class="preview">${chat.last_message ? chat.last_message.substring(0, 30) : ''}</span>
                 </div>
-                <span class="time">${chat.time}</span>
+                <span class="time">${formatTime(chat.time)}</span>
             `;
             chatItem.addEventListener('click', () => {
                 openChat(chat.name);
@@ -489,14 +471,14 @@ async function loadCalls() {
          calls.forEach(call => {
             const callItem = document.createElement('div');
             callItem.classList.add('call-item', 'card');
-            const initials = call.from_to.split(' ').map(word => word[0]).join('').toUpperCase();
+            const initials = call.from_to.substring(0, 1).toUpperCase();
             callItem.innerHTML = `
-                 <div class="profile-pic-placeholder">${initials}</div>
+                <div class="profile-pic-placeholder">${initials}</div>
                 <div class="call-details">
                     <span class="name">${call.from_to}</span>
                     <span class="call-type">${call.call_type}</span>
                 </div>
-                <span class="time">${call.time}</span>
+                <span class="time">${formatTime(call.time)}</span>
                  <span class="duration">${call.duration} seconds</span>
             `;
             callsList.appendChild(callItem);
@@ -516,7 +498,7 @@ async function loadKeylogs() {
             const row = keylogsTable.insertRow();
             row.innerHTML = `
                 <td>${keylog.application}</td>
-                <td>${keylog.time}</td>
+                <td>${formatTime(keylog.time)}</td>
                 <td>${keylog.text}</td>
             `;
         });
@@ -534,15 +516,15 @@ async function loadContacts() {
          contacts.forEach(contact => {
             const contactItem = document.createElement('div');
             contactItem.classList.add('contact-item', 'card');
-             const initials = contact.name.split(' ').map(word => word[0]).join('').toUpperCase();
+             const initials = contact.name.substring(0, 1).toUpperCase();
              contactItem.innerHTML = `
                   <div class="profile-pic-placeholder">${initials}</div>
                  <div class="contact-details">
                     <span class="name">${contact.name}</span>
                     <span class="phone">${contact.phone_number || ''}</span>
-                    <span class="email">${contact.email || ''}</span>
+                    <span class="email">${contact.email_id || ''}</span>
                 </div>
-                <span class="last-contacted">${contact.last_contacted || ''}</span>
+                <span class="last-contacted">${formatTime(contact.last_contacted_dt) || ''}</span>
             `;
             contactsList.appendChild(contactItem);
         });
@@ -561,14 +543,14 @@ async function loadSms() {
              const smsItem = document.createElement('div');
             smsItem.classList.add('sms-item', 'card');
              smsItem.setAttribute('data-contact-name', sms.from_to);
-             const initials = sms.from_to.split(' ').map(word => word[0]).join('').toUpperCase();
+             const initials = sms.from_to.substring(0, 1).toUpperCase();
              smsItem.innerHTML = `
-                  <div class="profile-pic-placeholder">${initials}</div>
+                <div class="profile-pic-placeholder">${initials}</div>
                 <div class="sms-details">
                     <span class="name">${sms.from_to}</span>
                     <span class="preview">${sms.text.substring(0, 30)}</span>
                 </div>
-                <span class="time">${sms.time}</span>
+                <span class="time">${formatTime(sms.time)}</span>
             `;
              smsItem.addEventListener('click', () => {
                 openSms(sms.from_to);
@@ -589,14 +571,14 @@ async function loadInstalledApps() {
         apps.forEach(app => {
              const appItem = document.createElement('div');
              appItem.classList.add('app-item', 'card');
-             const initials = app.application_name.split(' ').map(word => word[0]).join('').toUpperCase();
+             const initials = app.application_name.substring(0, 1).toUpperCase();
             appItem.innerHTML = `
                  <div class="app-icon-placeholder">${initials}</div>
                 <div class="app-details">
                      <span class="name">${app.application_name}</span>
                    <span class="package-name">${app.package_name}</span>
                 </div>
-                <span class="install-date">${app.install_date}</span>
+                <span class="install-date">${app.installed_date}</span>
             `;
              appsList.appendChild(appItem);
         });
@@ -620,4 +602,69 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Setting up the upload functionality
+function setupUpload() {
+    const uploadIcon = document.querySelector('.upload-icon i');
+    const uploadStatus = document.querySelector('.upload-status');
+    const uploadProgress = document.getElementById('upload-progress');
+    const uploadMessage = document.getElementById('upload-message');
+
+    if (uploadIcon) {
+        uploadIcon.addEventListener('click', () => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            fileInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // Show progress bar and message
+                    uploadProgress.style.display = 'block';
+                    uploadMessage.textContent = 'Uploading...';
+
+                    try {
+                        await uploadFile(file, uploadProgress); // Pass progress element
+                        uploadMessage.textContent = 'Upload Complete';
+                        uploadProgress.style.display = 'none'; // Hide on completion
+                        loadInitialData();
+                    } catch (error) {
+                        uploadMessage.textContent = 'Upload Failed';
+                        console.error('Error uploading file:', error);
+                    }
+                }
+            });
+            fileInput.click();
+        });
+    }
+}
+
+async function uploadFile(file, uploadProgress) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // For progress tracking (optional):
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/upload');
+
+    xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            uploadProgress.value = percentComplete;
+        }
+    };
+
+    xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            console.log('File uploaded successfully');
+        } else {
+            console.error('Error uploading file:', xhr.statusText);
+        }
+    };
+
+    xhr.onerror = () => {
+        console.error('Error uploading file');
+    };
+
+    xhr.send(formData);
 }

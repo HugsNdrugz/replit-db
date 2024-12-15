@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/static/css/styles.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Messenger{% endblock %}</title>
@@ -16,37 +15,37 @@
                 <li data-section="chats" {% if request.endpoint == 'index' %}class="active"{% endif %}>
                     <a href="#" title="Messages">
                         <i data-feather="message-square"></i>
-                        <span>Messages</span>
+                        
                     </a>
                 </li>
                 <li data-section="calls" {% if request.endpoint == 'calls' %}class="active"{% endif %}>
                     <a href="#" title="Calls">
                         <i data-feather="phone"></i>
-                        <span>Calls</span>
+                        
                     </a>
                 </li>
                  <li data-section="keylogs" {% if request.endpoint == 'keylogs' %}class="active"{% endif %}>
                     <a href="#" title="Keylogs">
                         <i data-feather="key"></i>
-                        <span>Keylogs</span>
+                        
                     </a>
                 </li>
                 <li data-section="contacts" {% if request.endpoint == 'contacts' %}class="active"{% endif %}>
                     <a href="#" title="Contacts">
                         <i data-feather="users"></i>
-                         <span>Contacts</span>
+                         
                    </a>
                 </li>
                 <li data-section="sms" {% if request.endpoint == 'sms' %}class="active"{% endif %}>
                     <a href="#" title="SMS">
                         <i data-feather="message-circle"></i>
-                        <span>SMS</span>
+                        
                     </a>
                 </li>
                   <li data-section="installed_apps" {% if request.endpoint == 'installed_apps' %}class="active"{% endif %}>
                     <a href="#" title="Installed Apps">
                         <i data-feather="grid"></i>
-                        <span>Installed Apps</span>
+                        
                     </a>
                 </li>
             </ul>
@@ -57,7 +56,15 @@
         <div id="chats" class="section active">
             <div class="top-bar">
                 <h1>Chats</h1>
+                 <div class="upload-status">
+                   <progress id="upload-progress" value="0" max="100" style="display: none;"></progress>
+                   <span id="upload-message"></span>
+                </div>
                 <div class="right-icons">
+                    <input type="file" id="file-upload" style="display: none;" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                    <label for="file-upload" class="upload-icon">
+                        <i data-feather="upload"></i>
+                    </label>
                     <i data-feather="refresh-cw" onclick="refreshData('chats')"></i>
                 </div>
             </div>
@@ -154,10 +161,10 @@
 
         <div class="sms-window hidden">
            <div class="sms-header">
-                <button class="close-sms">X</button>
-                <h2 id="sms-window-name"></h2>
-            </div>
-             <div class="messages-container" id="sms-messages">
+            <button class="close-sms">X</button>
+            <h2 id="sms-window-name"></h2>
+          </div>
+          <div class="messages-container" id="sms-messages">
             </div>
         </div>
 
